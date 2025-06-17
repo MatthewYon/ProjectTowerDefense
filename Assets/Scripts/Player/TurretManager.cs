@@ -25,6 +25,9 @@ public class TurretManager : MonoBehaviour
 
     private Turret lastOutlinedObj;
 
+    [SerializeField]
+    private List<TurretSlot> turretSlots;
+
 
     void Awake()
     {
@@ -56,15 +59,20 @@ public class TurretManager : MonoBehaviour
             
             if(Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
             {
-                if(hit.transform.gameObject.layer == LayerMask.NameToLayer("TurretZone"))
+                if(hit.transform.gameObject.TryGetComponent(out TurretSlot tSlot))
                 {
                     previewTurret.SetActive(true);
-                    previewTurret.transform.position = hit.point;
-                    if(Input.GetMouseButtonDown(0))
+                    previewTurret.transform.position = hit.transform.position;
+                    if (Input.GetMouseButtonDown(0))
                     {
+                        foreach(TurretSlot ts in turretSlots)
+                        {
+                            ts.SetOutline(false);
+                        }
                         Destroy(previewTurret.gameObject);
                         previewTurret = null;
-                        var tmpobj = Instantiate(turretsList[indexCurrentTurret], hit.point, Quaternion.identity);
+                        var tmpobj = Instantiate(turretsList[indexCurrentTurret], hit.transform.position, Quaternion.identity);
+                        tSlot.PlaceTurret(true);
                         ActiveTurretList.Add(tmpobj);
                         tmpobj.gameObject.name = "Turret " + ActiveTurretList.Count;
                         isPreviewOn = false;
@@ -73,12 +81,30 @@ public class TurretManager : MonoBehaviour
                 else
                 {
                     previewTurret.SetActive(false);
-                    if(Input.GetMouseButtonDown(0))
+                    if (Input.GetMouseButtonDown(0))
                     {
+                        foreach (TurretSlot ts in turretSlots)
+                        {
+                            ts.SetOutline(false);
+                        }
                         Destroy(previewTurret.gameObject);
                         previewTurret = null;
                         isPreviewOn = false;
                     }
+                }
+            }
+            else
+            {
+                previewTurret.SetActive(false);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    foreach (TurretSlot ts in turretSlots)
+                    {
+                        ts.SetOutline(false);
+                    }
+                    Destroy(previewTurret.gameObject);
+                    previewTurret = null;
+                    isPreviewOn = false;
                 }
             }
         }
@@ -86,14 +112,14 @@ public class TurretManager : MonoBehaviour
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            if(Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out hit))
             {
-                if(hit.transform.gameObject.TryGetComponent(out Turret currentTurret))
+                if (hit.transform.gameObject.TryGetComponent(out Turret currentTurret))
                 {
-                    if(lastOutlinedObj != null) lastOutlinedObj.DesactivateOutline();
+                    if (lastOutlinedObj != null) lastOutlinedObj.DesactivateOutline();
                     lastOutlinedObj = currentTurret;
                     lastOutlinedObj.ActivateOutline();
-                    if(Input.GetMouseButtonDown(0))
+                    if (Input.GetMouseButtonDown(0))
                     {
                         UIManager.Instance.ShowInfoTurret(currentTurret);
                         selectedTurret = currentTurret;
@@ -103,7 +129,7 @@ public class TurretManager : MonoBehaviour
                 }
                 else
                 {
-                    if(lastOutlinedObj != null && lastOutlinedObj != selectedTurret) 
+                    if (lastOutlinedObj != null && lastOutlinedObj != selectedTurret)
                     {
                         lastOutlinedObj.DesactivateOutline();
                         lastOutlinedObj = null;
@@ -129,6 +155,10 @@ public class TurretManager : MonoBehaviour
 
     public void TurretPlacementPreview(int indexTurret)
     {
+        foreach(TurretSlot ts in turretSlots)
+        {
+            ts.SetOutline(true);
+        }
         isPreviewOn = true;
         indexCurrentTurret = indexTurret;
         previewTurret = Instantiate(turretsList[indexCurrentTurret]);
