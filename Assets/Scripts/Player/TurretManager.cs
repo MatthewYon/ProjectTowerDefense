@@ -28,6 +28,9 @@ public class TurretManager : MonoBehaviour
     [SerializeField]
     private List<TurretSlot> turretSlots;
 
+    private TurretSlot selectedSlot = null;
+
+
 
     void Awake()
     {
@@ -56,17 +59,20 @@ public class TurretManager : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             int layerMask = LayerMask.GetMask("TurretZone");
-            
             if(Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
             {
                 if(hit.transform.gameObject.TryGetComponent(out TurretSlot tSlot))
                 {
                     previewTurret.SetActive(true);
                     previewTurret.transform.position = hit.transform.position;
+                    if(selectedSlot != null && selectedSlot != tSlot) selectedSlot.SetOutline(false);
+                    selectedSlot = tSlot;
+                    selectedSlot.SetOutline(true);
                     if (Input.GetMouseButtonDown(0))
                     {
                         foreach(TurretSlot ts in turretSlots)
                         {
+                            ts.SetSelectableOutline(false);
                             ts.SetOutline(false);
                         }
                         Destroy(previewTurret.gameObject);
@@ -81,10 +87,17 @@ public class TurretManager : MonoBehaviour
                 else
                 {
                     previewTurret.SetActive(false);
+                    if(selectedSlot != null)
+                    {
+                        Debug.Log("selectedSlot not null");
+                        selectedSlot.SetOutline(false);
+                    } 
+                        
                     if (Input.GetMouseButtonDown(0))
                     {
                         foreach (TurretSlot ts in turretSlots)
                         {
+                            ts.SetSelectableOutline(false);
                             ts.SetOutline(false);
                         }
                         Destroy(previewTurret.gameObject);
@@ -96,11 +109,17 @@ public class TurretManager : MonoBehaviour
             else
             {
                 previewTurret.SetActive(false);
+                if(selectedSlot != null)
+                {
+                    Debug.Log("selectedSlot not null");
+                    selectedSlot.SetOutline(false);
+                } 
                 if (Input.GetMouseButtonDown(0))
                 {
                     foreach (TurretSlot ts in turretSlots)
                     {
                         ts.SetOutline(false);
+                        selectedSlot.SetOutline(false);
                     }
                     Destroy(previewTurret.gameObject);
                     previewTurret = null;
@@ -157,7 +176,7 @@ public class TurretManager : MonoBehaviour
     {
         foreach(TurretSlot ts in turretSlots)
         {
-            ts.SetOutline(true);
+            ts.SetSelectableOutline(true);
         }
         isPreviewOn = true;
         indexCurrentTurret = indexTurret;

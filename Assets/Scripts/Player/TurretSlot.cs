@@ -7,14 +7,16 @@ public class TurretSlot : MonoBehaviour
 
     [SerializeField]
     GameObject OutlineGO;
+    [SerializeField]
+    GameObject SelectableOutlineGO;
 
     Collider tCollider;
 
     private void Awake()
     {
         tCollider = GetComponent<Collider>();
-        OutlineGO = transform.GetChild(0).gameObject;
-
+        SelectableOutlineGO = transform.GetChild(0).gameObject;
+        OutlineGO = transform.GetChild(1).gameObject;
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
@@ -35,6 +37,16 @@ public class TurretSlot : MonoBehaviour
         else
         {
             OutlineGO.SetActive(on);
+        }
+    }
+
+    public void SetSelectableOutline(bool on)
+    {
+        if(isUsed)
+            return;
+        else
+        {
+            SelectableOutlineGO.SetActive(on);
         }
     }
 
